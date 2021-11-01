@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Agendamento {
+   id                            String         @id      @default(uuid())
+   from                       Int         
+   at                            Int
+   dia                          Int
+   mes                        Int
+   ano                         Int
+   service                   String
+   created_at              DateTime       @default(now())
+   updated_at              DateTime       @default(now())
+   user_id           String                     
+   provider_id       String
+   user              Users?         @relation(fields: [user_id], references: [id])
+   prestador         Prestador?     @relation(fields: [provider_id], references: [id])
+}
+
+model Users {
+   id                String         @id      @default(uuid())
+   nome              String
+   email             String         @unique
+   senha             String
+   telefone          String                  
+   avatar            String?         
+   agendamento       Agendamento[]
+   token             String?
+}
+
+model Prestador {
+   id                String         @id      @default(uuid())
+   nome              String
+   email             String         @unique
+   telefone          String           
+   senha             String
+   avatar            String?
+   work_init         String
+   work_and          String
+   funcao            String
+   created_at        DateTime       @default(now())
+   updated_at        DateTime       @default(now())
+   agendamento       Agendamento[]
+   services          Services[]
+   token             String?
+}
+
+model notification {
+  id                 String         @id @default(uuid())
+  content            String         @db.VarChar
+  recipient_id       String         @db.VarChar
+  read               Boolean        @default(false)
+  created_at         DateTime       @default(now())      
+  updated_at         DateTime       @default(now()) 
+}
+
+model Services {
+   id          String      @id @default(uuid())
+   provider_id String      
+   service     String      @db.VarChar
+   description String      @db.VarChar
+   time        String      @db.VarChar
+   value       String
+   created_at  DateTime    @default(now()) @db.Timestamp(6)
+   updated_at  DateTime    @default(now()) @db.Timestamp(6)
+   prestador   Prestador?  @relation(fields: [provider_id], references: [id])
+}
+
+
+model user_tokens {
+  id                 String         @id @default(uuid())
+  token              String         @default(uuid()) @db.Uuid
+  user_id            String?        @db.Uuid
+  created_at         DateTime       @default(now()) @db.Timestamp(6)
+  updated_at         DateTime       @default(now()) @db.Timestamp(6)
+}
+
+model provider_tokens {
+  id                 String         @id @default(uuid())
+  token              String         @default(uuid())
+  provider_id        String         @db.Uuid
+  created_at         DateTime       @default(now()) @db.Timestamp(6)
+  updated_at         DateTime       @default(now()) @db.Timestamp(6)
+}
+
+
+model bloqueio {
+  id                 String         @id              @default(uuid())
+  provider_id        String         @db.VarChar
+  from               String         @db.VarChar
+  at                 String         @db.VarChar
+  mes                Int            @db.Integer
+  dia                Int            @db.Integer
+}
+
+model Reservas {
+   id                String         @id            @default(uuid())
+   provider_id       String         @default(uuid())
+   from              String         
+   at                String
+   mes               Int
+}
+
+model Posts {
+   id             String         @id            @default(uuid())
+   post           String         
+   descricao      String
+   prestador_id   String
+}
+
+model Promocao {
+   id          String         @id            @default(uuid())
+   image       String      
+   prestador_id String
+}
