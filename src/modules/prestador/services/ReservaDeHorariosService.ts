@@ -1,19 +1,14 @@
 /* eslint-disable block-scoped-var */
 /* eslint-disable no-var */
 /* eslint-disable vars-on-top */
-import AppError from "@shared/errors/AppError";
-import IReservarRepository from "@modules/prestador/repositories/IReservaRepository";
 import IPrestadorRepository from "@modules/prestador/repositories/IPrestadorRepository";
+import IReservarRepository from "@modules/prestador/repositories/IReservaRepository";
 import IUsersRepository from "@modules/users/repositories/IUsersRepository";
 import { Reservas } from "@prisma/client";
+import AppError from "@shared/errors/AppError";
 import { inject, injectable } from "tsyringe";
 
-interface IRequest {
-   provider_id: string;
-   from: string;
-   at: string;
-   mes: number;
-}
+import IReservaDTO from "../dtos/IReservaDTO";
 
 @injectable()
 export default class ReservaDeHorariosService {
@@ -29,8 +24,11 @@ export default class ReservaDeHorariosService {
       provider_id,
       from,
       at,
+      dia,
       mes,
-   }: IRequest): Promise<Reservas> {
+      ano,
+      week,
+   }: IReservaDTO): Promise<Reservas> {
       const findPrestador = await this.prestadorRepository.findById(
          provider_id
       );
@@ -43,7 +41,10 @@ export default class ReservaDeHorariosService {
          provider_id: findPrestador.id,
          from,
          at,
+         dia,
          mes,
+         ano,
+         week,
       });
 
       return res;

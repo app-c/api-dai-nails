@@ -80,6 +80,7 @@ export default class CreateAgendamentoService {
       const tempo = findServices.time as string;
 
       const hour = convertHours(from);
+      console.log(hour);
       const endHour = convertHours(tempo) + hour - 1;
 
       const horarioDoDia = agendaDodia.map((h) => {

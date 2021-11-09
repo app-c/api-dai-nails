@@ -15,20 +15,19 @@ class S3StoreageProvider implements IStorageProvider {
       });
    }
 
-   public async saveFile(file: string): Promise<string> {
+   public async saveFile(file: string, folder: string): Promise<string> {
       const originalPah = path.resolve(upload.tmpFolder, file);
 
+      const fileContent = await fs.promises.readFile(originalPah);
       const ContentType = mime.getType(originalPah);
 
       if (!ContentType) {
          throw new Error("erro");
       }
 
-      const fileContent = await fs.promises.readFile(originalPah);
-
       this.client
          .putObject({
-            Bucket: "dai-nails",
+            Bucket: `${process.env.AWS_BUCKET}/${folder}`,
             Key: file,
             ACL: "public-read",
             Body: fileContent,
@@ -36,13 +35,15 @@ class S3StoreageProvider implements IStorageProvider {
          })
          .promise();
 
+      await fs.promises.unlink(originalPah);
+
       return file;
    }
 
-   public async deleteFile(file: string): Promise<void> {
+   public async deleteFile(file: string, folder: string): Promise<void> {
       await this.client
          .deleteObject({
-            Bucket: upload.config.aws.bucket,
+            Bucket: `${process.env.AWS_BUCKET}/${folder}`,
             Key: file,
          })
          .promise();

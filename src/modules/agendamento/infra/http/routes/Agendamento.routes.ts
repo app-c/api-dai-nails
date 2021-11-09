@@ -30,7 +30,7 @@ agendaRoute.post(
    celebrate({
       [Segments.BODY]: {
          provider_id: Joi.string().required(),
-         user_id: Joi.string().required(),
+         // user_id: Joi.string().required(),
          service: Joi.string().required(),
          from: Joi.string().required(),
          dia: Joi.number().required(),

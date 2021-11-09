@@ -7,33 +7,29 @@ import { container } from "tsyringe";
 
 export default class PrestadorController {
    public async create(req: Request, res: Response): Promise<Response> {
-      try {
-         const {
-            nome,
-            email,
-            telefone,
-            senha,
-            work_init,
-            work_and,
-            funcao,
-         } = req.body;
+      const {
+         nome,
+         email,
+         telefone,
+         senha,
+         work_init,
+         work_and,
+         funcao,
+      } = req.body;
 
-         const create = container.resolve(CreatePrestadorService);
+      const create = container.resolve(CreatePrestadorService);
 
-         const prestador = await create.execute({
-            nome,
-            email,
-            telefone,
-            senha,
-            work_init,
-            work_and,
-            funcao,
-         });
+      const prestador = await create.execute({
+         nome,
+         email,
+         telefone,
+         senha,
+         work_init,
+         work_and,
+         funcao,
+      });
 
-         return res.json(prestador);
-      } catch (error) {
-         return res.json(error).status(400);
-      }
+      return res.json(prestador);
    }
 
    public async update(req: Request, res: Response): Promise<Response> {

@@ -112,7 +112,10 @@ CREATE TABLE "Reservas" (
     "provider_id" TEXT NOT NULL,
     "from" TEXT NOT NULL,
     "at" TEXT NOT NULL,
-    "mes" INTEGER NOT NULL,
+    "dia" INTEGER,
+    "mes" INTEGER,
+    "ano" INTEGER,
+    "week" TEXT,
 
     PRIMARY KEY ("id")
 );

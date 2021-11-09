@@ -21,9 +21,6 @@ const forgotController = new ForgotPasswordController();
 const avatarController = new UpdateAvatercontrller();
 const reservaController = new ReservaController();
 
-const createServiceController = new CreateServiçoController();
-const listController = new FindServiceController();
-
 //* */ Show profile *//
 prestadorRoute.get("/profile", midlewareAuth, prestadorControler.show);
 
@@ -45,6 +42,7 @@ prestadorRoute.post(
 );
 
 prestadorRoute.post("/reserva", midlewareAuth, reservaController.create);
+prestadorRoute.get("/reserva/find", midlewareAuth, reservaController.findAll);
 prestadorRoute.post("/session", sessionController.create);
 prestadorRoute.post("/forgot", forgotController.create);
 

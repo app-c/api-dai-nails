@@ -3,6 +3,7 @@ import midlewareAuth from "@shared/infra/http/midleWares/midlewareAuth";
 import { celebrate, Joi, Segments } from "celebrate";
 import { Router } from "express";
 import multer from "multer";
+
 import ForgotPasswordController from "../controller/ForgotPasswordController";
 import ResetPasswordController from "../controller/ResetPasswordController";
 import SessionController from "../controller/SessionController";

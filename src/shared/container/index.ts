@@ -1,3 +1,4 @@
+/* eslint-disable import-helpers/order-imports */
 import { IAgendamentoRepository } from "@modules/agendamento/repositories/IAgendamentoRespository";
 import IServiceRepository from "@modules/agendamento/repositories/IServiceRepository";
 import IPrestadorRepository from "@modules/prestador/repositories/IPrestadorRepository";
@@ -17,16 +18,13 @@ import ServiceRepository from "@modules/agendamento/infra/Prisma/ServiceResposit
 import BloqueioRepository from "@modules/agendamento/infra/Prisma/BloqueioRepository";
 import NotificationsRepository from "@modules/notifications/infra/Prisma/NotificatonRepository";
 import ReservasRepository from "@modules/prestador/infra/Prisma/ReservarRepository";
-import upload from "@config/upload";
+import { IPromocaoRepository } from "@modules/Promocao/repositories/IPromocaoRepository";
+import { PromocaoRespository } from "@modules/Promocao/repositories/PromocaoRepository";
+import { IPostsRepository } from "../../modules/posts/repositories/IPostRepository";
+import { PostRespository } from "../../modules/posts/repositories/PosterRepository";
 
-import DiskStorageProvider from "./providers/StorageProvider/implementations/DiskStorageProvider";
 import S3StoreageProvider from "./providers/StorageProvider/implementations/S3Provider";
 import IStorageProvider from "./providers/StorageProvider/models/IStorageProviders";
-
-const providers = {
-   disk: DiskStorageProvider,
-   s3: S3StoreageProvider,
-};
 
 container.registerSingleton<IStorageProvider>(
    "StorageProvider",
@@ -71,4 +69,10 @@ container.registerSingleton<IUserTokenRepository>(
 container.registerSingleton<INotification>(
    "NotificationRepository",
    NotificationsRepository
+);
+
+container.registerSingleton<IPostsRepository>("PrismaPosts", PostRespository);
+container.registerSingleton<IPromocaoRepository>(
+   "PrismaPromocao",
+   PromocaoRespository
 );

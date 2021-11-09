@@ -33,6 +33,6 @@ export default function midlewareAuth(
       };
       return next();
    } catch (err) {
-      throw new AppError("token invalido");
+      throw new AppError("token expirou");
    }
 }

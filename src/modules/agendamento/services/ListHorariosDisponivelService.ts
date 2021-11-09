@@ -4,7 +4,16 @@ import IReservarRepository from "@modules/prestador/repositories/IReservaReposit
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-types */
 import AppError from "@shared/errors/AppError";
-import { isAfter, getMinutes, format, toDate } from "date-fns";
+import {
+   isAfter,
+   getMinutes,
+   format,
+   toDate,
+   isWeekend,
+   getWeek,
+   isSunday,
+} from "date-fns";
+import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 import ptBR from "date-fns/esm/locale/pt-BR/index.js";
 import { inject, injectable } from "tsyringe";
 
@@ -93,15 +102,11 @@ export default class ListHorarioDiponilvelService {
 
       const fimDoHorarioMarcado = appointments
          .map((h) => {
-            // const horaReduzida = convertHours(h.at);
-
             return h.at + 1;
          })
          .sort((a, b) => {
             return a - b;
          });
-
-      const inicioLeng = inicioDoHorarioMarcado.length - 1;
 
       function rangeHorario(start: number, stop: number) {
          stop = stop === undefined ? start : stop;
@@ -139,7 +144,10 @@ export default class ListHorarioDiponilvelService {
             let f = fim[i] - tempoServico;
             while (f < h) {
                f += tempoServico;
-               hora.push(f);
+               const soma = f + tempoServico - 1;
+               if (soma < h) {
+                  hora.push(f);
+               }
             }
          });
 
@@ -153,41 +161,8 @@ export default class ListHorarioDiponilvelService {
             }
          });
 
-         // let indice = -1;
-         // while (indice < inicioLeng) {
-         //    indice += 1;
-         //    const inicio = inicioDoHorarioMarcado[indice + 1] + 1;
-         //    let fim = fimDoHorarioMarcado[indice];
-         //    while (fim < inicio) {
-         //       fim += 1;
-         //       if (fim + tempoServico < inicio) {
-         //          hora.push(fim);
-         //       }
-         //    }
-         // }
-
-         // const tempoWorkStart = convertHours(findWork.work_init);
-         // const tempoWorkStop = convertHours(findWork.work_and);
-
-         // let indCont = -tempoServico;
-         // while (indCont < hora[hora.length - 1]) {
-         //    indCont += tempoServico;
-         //    if (hora[indCont] !== undefined) {
-         //       horarios.push(hora[indCont]);
-         //    }
-         // }
-
-         // if (inicioDoHorarioMarcado[0] === undefined) {
-         //    let conte = tempoWorkStart - tempoServico;
-         //    while (conte < tempoWorkStop) {
-         //       conte += tempoServico;
-         //       horarios.push(conte);
-         //    }
-         // }
-
          if (inicioDoHorarioMarcado[0] > tempoInicialDaJornada) {
             let con = tempoInicialDaJornada - tempoServico;
-            console.log(time);
             const or: number[] = [];
             const horaMI = inicioDoHorarioMarcado[0] - tempoServico;
             while (con < horaMI) {
@@ -209,8 +184,6 @@ export default class ListHorarioDiponilvelService {
                horarios.push(hormin);
             }
          }
-
-         // console.log(time, tempoServico);
       }
 
       horarios.sort((a, b) => {
@@ -224,6 +197,35 @@ export default class ListHorarioDiponilvelService {
       );
 
       const findReservas = await this.reservaRepository.findById(mes);
+      const findWeek = findReservas.map((h) => {
+         if (h.week === "domingo") {
+            h.week = String(1);
+         }
+
+         if (h.week === "segunda") {
+            h.week = String(2);
+         }
+
+         if (h.week === "terça") {
+            h.week = String(3);
+         }
+
+         if (h.week === "quarta") {
+            h.week = String(4);
+         }
+         if (h.week === "quinta") {
+            h.week = String(5);
+         }
+         if (h.week === "sexta") {
+            h.week = String(6);
+         }
+
+         if (h.week === "sábado") {
+            h.week = String(7);
+         }
+
+         return h;
+      });
 
       const startReserva = findReservas
          .map((h) => convertHours(h.from))
@@ -242,31 +244,85 @@ export default class ListHorarioDiponilvelService {
          .sort((a, b) => a - b);
 
       const bloqueio: number[] = [];
-      if (findBloqueio) {
-         const lenght = findBloqueio.length - 1;
-         let i = -1;
+      // if (findBloqueio) {
+      //    const lenght = findBloqueio.length - 1;
+      //    let i = -1;
 
-         while (i < lenght) {
-            i += 1;
+      //    while (i < lenght) {
+      //       i += 1;
 
-            const startB = startBloqueio[i];
-            const stopB = stopBloqueio[i];
+      //       const startB = startBloqueio[i];
+      //       const stopB = stopBloqueio[i];
 
-            rangeHorario(startB, stopB).map((h) => bloqueio.push(h));
+      //       rangeHorario(startB, stopB).map((h) => bloqueio.push(h));
+      //    }
+      // }
+
+      const hourCorrent = zonedTimeToUtc(
+         new Date(Date.now()),
+         "Brazil/Sao-Paulo"
+      );
+
+      const event = zonedTimeToUtc(
+         new Date(ano, mes, dia, 0, 0),
+         "Brazil/Sao-Paulo"
+      );
+
+      const wekreservas = findWeek.filter((h) => {
+         const wek = format(event, "i");
+
+         if (h.week === wek) {
+            return h;
+         }
+      });
+
+      const startReservaWeek = wekreservas
+         .map((h) => convertHours(h.from))
+         .sort((a, b) => a - b);
+
+      const stopReservaWeek = wekreservas
+         .map((h) => convertHours(h.at))
+         .sort((a, b) => a - b);
+
+      let index = -1;
+      const wekLeng = wekreservas.length - 1;
+
+      while (index < wekLeng) {
+         index += 1;
+
+         if (!wekreservas[index].dia) {
+            const leng = findWeek.length - 1;
+            let x = -1;
+
+            while (x < leng) {
+               x += 1;
+
+               const start = startReservaWeek[x];
+               const stop = stopReservaWeek[x];
+
+               rangeHorario(start, stop).map((h) => bloqueio.push(h));
+            }
          }
       }
 
-      if (findReservas) {
-         const lenght = findReservas.length - 1;
-         let i = -1;
+      let indexRe = -1;
+      const reserva = findReservas.length - 1;
 
-         while (i < lenght) {
-            i += 1;
+      while (indexRe < reserva) {
+         indexRe += 1;
 
-            const startR = startReserva[i];
-            const stopR = stopReserva[i];
+         if (findReservas[indexRe].dia === dia) {
+            const lenght = findReservas.length - 1;
+            let i = -1;
 
-            rangeHorario(startR, stopR).map((h) => bloqueio.push(h));
+            while (i < lenght) {
+               i += 1;
+
+               const startR = startReserva[i];
+               const stopR = stopReserva[i];
+
+               rangeHorario(startR, stopR).map((h) => bloqueio.push(h));
+            }
          }
       }
 
@@ -277,23 +333,25 @@ export default class ListHorarioDiponilvelService {
          return h !== bk;
       });
 
+      const hora = new Date(ano, mes, dia, 0, 480, 0);
+      const ho = utcToZonedTime(
+         new Date(ano, mes, dia, 0, 480, 0),
+         "Ameria/Sao_Paulo"
+      );
+
+      const fo = format(hora, "HH:mm");
+      const fu = format(ho, "HH:mm");
+      console.log(ho, hora);
+      console.log(fu, fo);
+
       const hor = horariosBloqueados.map((h) => {
-         const hourCorrent = new Date(Date.now());
-         hourCorrent.setMinutes(-(3 * 60));
-
-         const event = new Date(ano, mes - 1, dia, 0, h, 0);
-
-         const formated = format(event, "HH:mm");
-         let week = format(event, "i");
-         if (week === "7") {
-            week = false;
-         } else {
-            week = true;
-         }
+         const hour = new Date(ano, mes, dia, 0, h, 0);
+         const formated = format(hour, "HH:mm");
+         const weed = format(event, "i");
 
          return {
             hour: formated,
-            avaliable: isAfter(event, hourCorrent) && week,
+            avaliable: isAfter(hour, hourCorrent) && Number(weed) !== 1,
          };
       });
 

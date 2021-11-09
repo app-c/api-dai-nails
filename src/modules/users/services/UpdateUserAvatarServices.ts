@@ -1,7 +1,8 @@
+import { PrismaClient, Users } from "@prisma/client";
+import IStorageProvider from "@shared/container/providers/StorageProvider/models/IStorageProviders";
 import AppError from "@shared/errors/AppError";
 import { inject, injectable } from "tsyringe";
-import IStorageProvider from "@shared/container/providers/StorageProvider/models/IStorageProviders";
-import { PrismaClient, Users } from "@prisma/client";
+
 import IUsersRepository from "../repositories/IUsersRepository";
 
 interface IRequest {
@@ -28,11 +29,14 @@ class UpdateUserAvatarService {
          throw new AppError("usuario naos encontrado");
       }
 
-      if (user.avatar) {
-         await this.storageProvider.deleteFile(user.avatar);
-      }
+      // if (user.avatar) {
+      //    await this.storageProvider.deleteFile(user.avatar, "avatar");
+      // }
 
-      const filename = await this.storageProvider.saveFile(avatarFilename);
+      const filename = await this.storageProvider.saveFile(
+         avatarFilename,
+         "avatar"
+      );
 
       user.avatar = filename;
 

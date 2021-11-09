@@ -2,6 +2,7 @@ import { Prestador, PrismaClient } from "@prisma/client";
 import IStorageProvider from "@shared/container/providers/StorageProvider/models/IStorageProviders";
 import AppError from "@shared/errors/AppError";
 import { inject, injectable } from "tsyringe";
+
 import IPrestadorRepository from "../repositories/IPrestadorRepository";
 
 interface IRequest {
@@ -32,11 +33,14 @@ export default class UpdateAvatarPrestadorService {
          throw new AppError("Usuário nãos encontrado");
       }
 
-      if (prestador.avatar) {
-         await this.storageProvider.deleteFile(prestador.avatar);
-      }
+      // if (prestador.avatar) {
+      //    await this.storageProvider.deleteFile(prestador.avatar, "avatar");
+      // }
 
-      const fileName = await this.storageProvider.saveFile(avatarName);
+      const fileName = await this.storageProvider.saveFile(
+         avatarName,
+         "avatar"
+      );
 
       prestador.avatar = fileName;
 

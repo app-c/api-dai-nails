@@ -12,7 +12,14 @@ interface IRequest {
 }
 
 interface IResponse {
-   prestador: Prestador;
+   prestador: {
+      id: string;
+      avatarUrl: string;
+      nome: string;
+      work_init: string;
+      work_and: string;
+      token: any;
+   };
    token: string;
 }
 
@@ -31,6 +38,7 @@ export default class AuthenticatePrestadorService {
       }
 
       const compareHash = await compare(senha, prestador.senha);
+      console.log(prestador);
 
       if (!compareHash) {
          throw new AppError("senha incorreta");
@@ -41,6 +49,18 @@ export default class AuthenticatePrestadorService {
          expiresIn: auth.jwt.expiresIn,
       });
 
-      return { prestador, token };
+      console.log(prestador.avatar);
+
+      return {
+         prestador: {
+            id: prestador.id,
+            nome: prestador.nome,
+            avatarUrl: `${process.env.AWS_URL}avatar/${prestador.avatar}`,
+            work_init: prestador.work_init,
+            work_and: prestador.work_and,
+            token: prestador.token,
+         },
+         token,
+      };
    }
 }

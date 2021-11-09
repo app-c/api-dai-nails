@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import IReservarRepository from "@modules/prestador/repositories/IReservaRepository";
 import IReservaDTO from "@modules/prestador/dtos/IReservaDTO";
+
 import { Reservas } from ".prisma/client";
 
 export default class ReservasRepository implements IReservarRepository {
@@ -12,7 +13,10 @@ export default class ReservasRepository implements IReservarRepository {
             provider_id: data.provider_id,
             from: data.from,
             at: data.at,
+            dia: data.dia,
             mes: data.mes,
+            ano: data.ano,
+            week: data.week,
          },
       });
 
@@ -25,5 +29,20 @@ export default class ReservasRepository implements IReservarRepository {
       });
 
       return res;
+   }
+
+   async findByWeekMonth(mes: number, week: string): Promise<Reservas | null> {
+      const res = await this.prisma.reservas.findFirst({
+         where: { mes, week },
+      });
+      return res;
+   }
+
+   async findAll(id: string): Promise<Reservas[]> {
+      const find = await this.prisma.reservas.findMany({
+         where: { provider_id: id },
+      });
+
+      return find;
    }
 }

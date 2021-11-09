@@ -11,15 +11,15 @@ generator client {
 }
 
 model Agendamento {
-   id                            String         @id      @default(uuid())
-   from                       Int         
-   at                            Int
-   dia                          Int
-   mes                        Int
-   ano                         Int
-   service                   String
-   created_at              DateTime       @default(now())
-   updated_at              DateTime       @default(now())
+   id                String         @id      @default(uuid())
+   from              Int         
+   at                Int
+   dia               Int
+   mes               Int
+   ano               Int
+   service           String
+   created_at        DateTime       @default(now())
+   updated_at        DateTime       @default(now())
    user_id           String                     
    provider_id       String
    user              Users?         @relation(fields: [user_id], references: [id])
@@ -51,6 +51,8 @@ model Prestador {
    updated_at        DateTime       @default(now())
    agendamento       Agendamento[]
    services          Services[]
+   promocao          Promocao[]
+   posts             Posts[]
    token             String?
 }
 
@@ -104,21 +106,27 @@ model bloqueio {
 
 model Reservas {
    id                String         @id            @default(uuid())
-   provider_id       String         @default(uuid())
+   provider_id       String         
    from              String         
    at                String
-   mes               Int
+   dia               Int?
+   mes               Int?
+   ano               Int?
+   week              String?
 }
 
 model Posts {
-   id             String         @id            @default(uuid())
-   post           String         
-   descricao      String
-   prestador_id   String
+   id                   String         @id            @default(uuid())
+   post                 String         
+   descricao            String
+   prestador_id        String
+   prestador            Prestador      @relation(fields: [prestador_id], references: [id])
 }
 
 model Promocao {
-   id          String         @id            @default(uuid())
-   image       String      
-   prestador_id String
+   id                   String         @id            @default(uuid())
+   image                String      
+   prestador_id         String
+   prestador            Prestador      @relation(fields: [prestador_id], references: [id])
+   descricao            String?
 }
