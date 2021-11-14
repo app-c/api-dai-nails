@@ -44,7 +44,7 @@ jobs:
             cd ~/app/api
             yarn
             yarn prisma db push
-            pm2 restart dai-nails 
+            pm2 restart dai 
 
 
 
