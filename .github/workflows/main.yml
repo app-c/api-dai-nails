@@ -42,7 +42,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/app/api
-            yarn
             yarn prisma db push
             pm2 restart dai 
 
