@@ -1,3 +1,5 @@
+/* eslint-disable yoda */
+/* eslint-disable import/no-duplicates */
 /* eslint-disable array-callback-return */
 import IPrestadorRepository from "@modules/prestador/repositories/IPrestadorRepository";
 import IReservarRepository from "@modules/prestador/repositories/IReservaRepository";
@@ -12,11 +14,14 @@ import {
    isWeekend,
    getWeek,
    isSunday,
+   getHours,
+   addHours,
 } from "date-fns";
 import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
-import ptBR from "date-fns/esm/locale/pt-BR/index.js";
+import ptBR from "date-fns/esm/locale/pt-BR";
 import { inject, injectable } from "tsyringe";
 
+import { converData } from "../../../../utils/convert";
 import { IAgendamentoRepository } from "../repositories/IAgendamentoRespository";
 import IBloqueioRepository from "../repositories/IBloqueioRepository";
 import IServiceRepository from "../repositories/IServiceRepository";
@@ -199,29 +204,29 @@ export default class ListHorarioDiponilvelService {
       const findReservas = await this.reservaRepository.findById(mes);
       const findWeek = findReservas.map((h) => {
          if (h.week === "domingo") {
-            h.week = String(1);
+            h.week = String(7);
          }
 
          if (h.week === "segunda") {
-            h.week = String(2);
+            h.week = String(1);
          }
 
          if (h.week === "terça") {
-            h.week = String(3);
+            h.week = String(2);
          }
 
          if (h.week === "quarta") {
-            h.week = String(4);
+            h.week = String(3);
          }
          if (h.week === "quinta") {
-            h.week = String(5);
+            h.week = String(4);
          }
          if (h.week === "sexta") {
-            h.week = String(6);
+            h.week = String(5);
          }
 
          if (h.week === "sábado") {
-            h.week = String(7);
+            h.week = String(6);
          }
 
          return h;
@@ -258,15 +263,10 @@ export default class ListHorarioDiponilvelService {
       //    }
       // }
 
-      const hourCorrent = zonedTimeToUtc(
-         new Date(Date.now()),
-         "Brazil/Sao-Paulo"
-      );
+      const hourCorrent = new Date(Date.now());
+      const HC = addHours(hourCorrent, -3);
 
-      const event = zonedTimeToUtc(
-         new Date(ano, mes, dia, 0, 0),
-         "Brazil/Sao-Paulo"
-      );
+      const event = new Date(ano, mes, dia, 0, 0);
 
       const wekreservas = findWeek.filter((h) => {
          const wek = format(event, "i");
@@ -333,25 +333,16 @@ export default class ListHorarioDiponilvelService {
          return h !== bk;
       });
 
-      const hora = new Date(ano, mes, dia, 0, 480, 0);
-      const ho = utcToZonedTime(
-         new Date(ano, mes, dia, 0, 480, 0),
-         "Ameria/Sao_Paulo"
-      );
-
-      const fo = format(hora, "HH:mm");
-      const fu = format(ho, "HH:mm");
-      console.log(ho, hora);
-      console.log(fu, fo);
+      const ho = new Date(Date.now());
 
       const hor = horariosBloqueados.map((h) => {
-         const hour = new Date(ano, mes, dia, 0, h, 0);
+         const hour = new Date(ano, mes - 1, dia, 0, h, 0);
          const formated = format(hour, "HH:mm");
-         const weed = format(event, "i");
-
+         const weed = format(hour, "i");
+         console.log(weed);
          return {
             hour: formated,
-            avaliable: isAfter(hour, hourCorrent) && Number(weed) !== 1,
+            avaliable: isAfter(hour, ho) && Number(weed) !== 7,
          };
       });
 
