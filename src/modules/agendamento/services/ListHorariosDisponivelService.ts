@@ -335,6 +335,7 @@ export default class ListHorarioDiponilvelService {
       });
 
       const ho = new Date(Date.now());
+      const horaAtual = addHours(ho, -3);
 
       const hor = horariosBloqueados.map((h) => {
          const hour = new Date(ano, mes - 1, dia, 0, h, 0);
@@ -342,7 +343,7 @@ export default class ListHorarioDiponilvelService {
          const weed = format(hour, "i");
          return {
             hour: formated,
-            avaliable: isAfter(hour, ho) && Number(weed) !== 7,
+            avaliable: isAfter(hour, horaAtual) && Number(weed) !== 7,
          };
       });
 
