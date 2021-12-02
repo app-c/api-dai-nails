@@ -266,10 +266,11 @@ export default class ListHorarioDiponilvelService {
       const hourCorrent = new Date(Date.now());
       const HC = addHours(hourCorrent, -3);
 
-      const event = new Date(ano, mes, dia, 0, 0);
+      const event = new Date(ano, mes - 1, dia, 0, 0);
 
       const wekreservas = findWeek.filter((h) => {
          const wek = format(event, "i");
+         console.log(wek, event);
 
          if (h.week === wek) {
             return h;
@@ -339,7 +340,6 @@ export default class ListHorarioDiponilvelService {
          const hour = new Date(ano, mes - 1, dia, 0, h, 0);
          const formated = format(hour, "HH:mm");
          const weed = format(hour, "i");
-         console.log(weed);
          return {
             hour: formated,
             avaliable: isAfter(hour, ho) && Number(weed) !== 7,
