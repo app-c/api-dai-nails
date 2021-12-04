@@ -25,10 +25,8 @@ export class PromocaoRespository implements IPromocaoRepository {
       });
    }
 
-   async list(prestador_id: string): Promise<Promocao[]> {
-      const post = await this.prisma.promocao.findMany({
-         where: { prestador_id },
-      });
+   async list(): Promise<Promocao[]> {
+      const post = await this.prisma.promocao.findMany();
 
       return post;
    }

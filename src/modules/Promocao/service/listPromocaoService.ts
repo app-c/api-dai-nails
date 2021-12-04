@@ -5,9 +5,6 @@ import { inject, injectable } from "tsyringe";
 
 import { IPromocaoRepository } from "../repositories/IPromocaoRepository";
 
-interface IProps {
-   prestador_id: string;
-}
 @injectable()
 export class listPromocaoService {
    constructor(
@@ -15,8 +12,8 @@ export class listPromocaoService {
       private postRespository: IPromocaoRepository
    ) {}
 
-   async execute({ prestador_id }: IProps): Promise<Promocao[]> {
-      const promocao = await this.postRespository.list(prestador_id);
+   async execute(): Promise<Promocao[]> {
+      const promocao = await this.postRespository.list();
 
       if (!promocao) {
          throw new AppError("sem promocao");
