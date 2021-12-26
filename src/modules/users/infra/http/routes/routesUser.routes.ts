@@ -19,7 +19,7 @@ const updateAvatercontrller = new UpdateAvatercontrller();
 const resetPassword = new ResetPasswordController();
 const forgot = new ForgotPasswordController();
 
-const img = multer(upload.multer);
+const img = multer(upload);
 
 UserRoute.post(
    "/user",

@@ -13,7 +13,7 @@ import SessionPrestadorController from "../controllers/SessionPrestadorControlle
 import UpdateAvatercontrller from "../controllers/UpateAvatarController";
 
 const prestadorRoute = Router();
-const img = multer(upload.multer);
+const img = multer(upload);
 
 const prestadorControler = new PrestadorController();
 const sessionController = new SessionPrestadorController();

@@ -34,7 +34,7 @@ app.use((req, res, nex) => {
 app.use(rateLimiter);
 app.use(cors());
 app.use(express.json());
-app.use("/file", express.static(upload.UploadFolder));
+// app.use("/file", express.static(upload));
 
 app.use(Route);
 app.use(errors());

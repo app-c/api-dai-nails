@@ -24,7 +24,7 @@ export class listPromocaoService {
             id: h.id,
             descricao: h.descricao,
             prestador_id: h.prestador_id,
-            image: `${process.env.AWS_URL}promocao/${h.image}`,
+            image: `${process.env.AWS_URL}/promocao/${h.image}`,
          };
       });
 

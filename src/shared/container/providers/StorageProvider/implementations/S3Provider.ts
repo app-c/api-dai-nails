@@ -1,31 +1,29 @@
+/* eslint-disable import/prefer-default-export */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import upload from "@config/upload";
-import aws, { S3 } from "aws-sdk";
+import { S3 } from "aws-sdk";
 import fs from "fs";
-import mime from "mime";
-import path from "path";
+import mine from "mime";
+import { resolve } from "path";
 
 import IStorageProvider from "../models/IStorageProviders";
 
-class S3StoreageProvider implements IStorageProvider {
+export class S3Storage implements IStorageProvider {
    private client: S3;
 
    constructor() {
-      this.client = new aws.S3({
-         region: "us-east-2",
+      this.client = new S3({
+         region: process.env.AWS_BUCKET_REGION,
       });
    }
 
-   public async saveFile(file: string, folder: string): Promise<string> {
-      const originalPah = path.resolve(upload.tmpFolder, file);
+   async saveFile(file: string, folder: string): Promise<string> {
+      const originalName = resolve(upload.tmpFolder, file);
+      const fileContent = await fs.promises.readFile(originalName);
 
-      const fileContent = await fs.promises.readFile(originalPah);
-      const ContentType = mime.getType(originalPah);
+      const ContentType = mine.getType(originalName)!;
 
-      if (!ContentType) {
-         throw new Error("erro");
-      }
-
-      this.client
+      await this.client
          .putObject({
             Bucket: `${process.env.AWS_BUCKET}/${folder}`,
             Key: file,
@@ -35,12 +33,12 @@ class S3StoreageProvider implements IStorageProvider {
          })
          .promise();
 
-      await fs.promises.unlink(originalPah);
+      await fs.promises.unlink(originalName);
 
       return file;
    }
 
-   public async deleteFile(file: string, folder: string): Promise<void> {
+   async deleteFile(file: string, folder: string): Promise<void> {
       await this.client
          .deleteObject({
             Bucket: `${process.env.AWS_BUCKET}/${folder}`,
@@ -49,5 +47,3 @@ class S3StoreageProvider implements IStorageProvider {
          .promise();
    }
 }
-
-export default S3StoreageProvider;

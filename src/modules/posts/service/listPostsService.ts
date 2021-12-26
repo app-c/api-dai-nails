@@ -22,8 +22,9 @@ export class listPostService {
 
       const po = post.map((h) => {
          return {
+            id: h.id,
             post: h.post,
-            postUrl: `${process.env.AWS_URL}posts/${h.post}`,
+            postUrl: `${process.env.AWS_URL}/posts/${h.post}`,
             descricao: h.descricao,
          };
       });

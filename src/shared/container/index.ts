@@ -22,14 +22,11 @@ import { IPromocaoRepository } from "@modules/Promocao/repositories/IPromocaoRep
 import { PromocaoRespository } from "@modules/Promocao/repositories/PromocaoRepository";
 import { IPostsRepository } from "../../modules/posts/repositories/IPostRepository";
 import { PostRespository } from "../../modules/posts/repositories/PosterRepository";
+import { S3Storage } from "./providers/StorageProvider/implementations/S3Provider";
 
-import S3StoreageProvider from "./providers/StorageProvider/implementations/S3Provider";
 import IStorageProvider from "./providers/StorageProvider/models/IStorageProviders";
 
-container.registerSingleton<IStorageProvider>(
-   "StorageProvider",
-   S3StoreageProvider
-);
+container.registerSingleton<IStorageProvider>("StorageProvider", S3Storage);
 
 container.registerSingleton<IAgendamentoRepository>(
    "AgendamentoRepository",

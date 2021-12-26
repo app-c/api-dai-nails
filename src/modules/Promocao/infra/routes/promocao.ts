@@ -7,7 +7,7 @@ import multer from "multer";
 import { PromocaoController } from "../controllers/PromocaoController";
 
 const controller = new PromocaoController();
-const up = multer(upload.multer);
+const up = multer(upload);
 
 const promocao = Router();
 promocao.use(midlewareAuth);

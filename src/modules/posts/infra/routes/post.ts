@@ -7,12 +7,12 @@ import multer from "multer";
 import { PostController } from "../controllers/PostController";
 
 const controller = new PostController();
-const up = multer(upload.multer);
+const up = multer(upload);
 
 const post = Router();
+post.get("/list", controller.list);
 post.use(midlewareAuth);
 post.patch("/", up.single("post"), controller.create);
-post.get("/list", controller.list);
 post.get("/list/prestador", controller.listPresetadorPost);
 
 export { post };
