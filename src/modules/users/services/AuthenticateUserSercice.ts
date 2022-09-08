@@ -1,9 +1,10 @@
-import AppError from "@shared/errors/AppError";
-import { compare } from "bcryptjs";
-import { inject, injectable } from "tsyringe";
-import { sign } from "jsonwebtoken";
 import auth from "@config/auth";
 import { Users } from "@prisma/client";
+import AppError from "@shared/errors/AppError";
+import { compare } from "bcryptjs";
+import { sign } from "jsonwebtoken";
+import { inject, injectable } from "tsyringe";
+
 import IUsersRepository from "../repositories/IUsersRepository";
 
 interface IResponse {

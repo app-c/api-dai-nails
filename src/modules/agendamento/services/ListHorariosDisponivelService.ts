@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable yoda */
 /* eslint-disable import/no-duplicates */
 /* eslint-disable array-callback-return */
@@ -21,7 +22,6 @@ import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 import ptBR from "date-fns/esm/locale/pt-BR";
 import { inject, injectable } from "tsyringe";
 
-import { converData } from "../../../../utils/convert";
 import { IAgendamentoRepository } from "../repositories/IAgendamentoRespository";
 import IBloqueioRepository from "../repositories/IBloqueioRepository";
 import IServiceRepository from "../repositories/IServiceRepository";
@@ -88,8 +88,8 @@ export default class ListHorarioDiponilvelService {
          throw new AppError("Esse serviço nao existe");
       }
 
-      const tempoServico = convertHours(findSercies?.time);
-      const time = getMinutes(new Date(2000, 2, 2, 10, tempoServico - 1, 0, 0));
+      const time = convertHours(findSercies?.time);
+      // const time = getMinutes(new Date(2000, 2, 2, 10, tempoServico - 1, 0, 0));
 
       const appointments = await this.agendamentoRepository.findAgenndamentosDoDia(
          dia,
@@ -97,7 +97,18 @@ export default class ListHorarioDiponilvelService {
          provider_id
       );
 
-      const inicioDoHorarioMarcado = appointments
+      const ag = appointments
+         .map((h) => {
+            return {
+               from: h.from,
+               at: h.at,
+            };
+         })
+         .sort((a, b) => {
+            return a.from - b.from && a.at - b.at;
+         });
+
+      const agFrom = appointments
          .map((h) => {
             return h.from;
          })
@@ -105,17 +116,9 @@ export default class ListHorarioDiponilvelService {
             return a - b;
          });
 
-      const fimDoHorarioMarcado = appointments
-         .map((h) => {
-            return h.at + 1;
-         })
-         .sort((a, b) => {
-            return a - b;
-         });
-
       function rangeHorario(start: number, stop: number) {
          stop = stop === undefined ? start : stop;
-         start = stop === start ? tempoServico : start;
+         start = stop === start ? time : start;
 
          const length = stop - start + 1;
 
@@ -125,70 +128,99 @@ export default class ListHorarioDiponilvelService {
          return hor;
       }
 
+      // TODO logica para listar horarios disponiveis
+      function convertHoursWork(tempo: string) {
+         const [hour, minutes] = tempo.split(":").map(Number);
+         const timeInMinutes = hour * 60;
+         return timeInMinutes;
+      }
+
+      const horaAtual = new Date(Date.now());
+      const hs = format(horaAtual, "HH:mm");
+      const hora = convertHoursWork(hs);
+
       if (findSercies.service === service) {
-         const hora: number[] = [];
+         const work = convertHours(findWork.work_init);
+         const workInit = work;
+         const workAnd = convertHours(findWork.work_and);
 
-         const tempoInicialDaJornada = convertHours(findWork.work_init);
-         const tempoFinallDaJornada = convertHours(findWork.work_and);
+         const lengFrom = agFrom.length;
 
-         if (!inicioDoHorarioMarcado[0]) {
-            let i = tempoInicialDaJornada - tempoServico;
-            while (i < tempoFinallDaJornada) {
-               i += tempoServico;
+         let valor = work;
+         console.log(ag);
+
+         // * se nao houver horarios agendados
+         if (lengFrom === 0) {
+            let i = workInit;
+            for (; i <= workAnd; i += time) {
                horarios.push(i);
             }
          }
 
-         const inicio = inicioDoHorarioMarcado.slice(1);
-         const fim = fimDoHorarioMarcado.slice(
-            0,
-            fimDoHorarioMarcado.length - 1
-         );
-
-         inicio.map((h, i) => {
-            let f = fim[i] - tempoServico;
-            while (f < h) {
-               f += tempoServico;
-               const soma = f + tempoServico - 1;
-               if (soma < h) {
-                  hora.push(f);
+         // * se houver agendamento
+         if (ag.length >= 1) {
+            for (let i = 0; i < ag.length; i += 1) {
+               for (let j = valor; j < ag[i].from; j += time) {
+                  if (j + time <= ag[i].from) {
+                     horarios.push(j);
+                  }
                }
+               valor = ag[i].at;
             }
-         });
 
-         hora.filter((h) => {
-            const find = inicioDoHorarioMarcado.find((p) => {
-               return h === p;
-            });
-
-            if (h !== find) {
-               horarios.push(h);
+            for (let b = ag[ag.length - 1].at; b <= workAnd; b += time) {
+               horarios.push(b);
             }
-         });
-
-         if (inicioDoHorarioMarcado[0] > tempoInicialDaJornada) {
-            let con = tempoInicialDaJornada - tempoServico;
-            const or: number[] = [];
-            const horaMI = inicioDoHorarioMarcado[0] - tempoServico;
-            while (con < horaMI) {
-               con += tempoServico;
-               or.push(con);
-            }
-            or.filter((h) => {
-               if (h + time < inicioDoHorarioMarcado[0]) {
-                  horarios.push(h);
-               }
-            });
          }
 
-         let hormin =
-            fimDoHorarioMarcado[fimDoHorarioMarcado.length - 1] - tempoServico;
-         for (hormin; hormin < tempoFinallDaJornada; ) {
-            hormin += tempoServico;
-            if (hormin <= tempoFinallDaJornada) {
-               horarios.push(hormin);
-            }
-         }
+         // // * se houver apenas um horario agendado
+         // if (lengFrom === 1) {
+         //    let inicio = workInit;
+         //    const leng = agFrom.length - 1;
+         //    let i = -1;
+
+         //    while (i < leng) {
+         //       i += 1;
+         //       for (; inicio < agFrom[i]; inicio += time) {
+         //          if (inicio - 1 + time < agFrom[i]) {
+         //             horarios.push(inicio);
+         //          }
+         //       }
+         //       let at = agAt[i] - 1;
+         //       for (; at < workAnd; at += time) {
+         //          horarios.push(at);
+         //       }
+         //    }
+         // }
+
+         // // * se houver mais de um horario agendado
+         // if (lengFrom > 1) {
+         //    const leng = agFrom.length - 1;
+         //    let i = -1;
+         //    let con = workInit;
+         //    const atLeng = agAt.length - 1;
+         //    let atleng = agAt[atLeng] - 1;
+
+         //    for (; i < leng; i += 1) {
+         //       for (; con < agFrom[0]; con += time) {
+         //          if (con - 1 + time < agFrom[0]) {
+         //             horarios.push(con);
+         //          }
+         //       }
+
+         //       const from = agFrom[i + 1];
+         //       let at = agAt[i] - 1;
+         //       for (; at < from; at += time) {
+         //          if (at - 1 + time < from) {
+         //             horarios.push(at);
+         //          }
+         //       }
+
+         //       for (; atleng < workAnd; atleng += time) {
+         //          horarios.push(atleng);
+         //       }
+         //    }
+         // }
       }
 
       horarios.sort((a, b) => {
@@ -202,6 +234,7 @@ export default class ListHorarioDiponilvelService {
       );
 
       const findReservas = await this.reservaRepository.findById(mes);
+     
       const findWeek = findReservas.map((h) => {
          if (h.week === "domingo") {
             h.week = String(7);
@@ -249,20 +282,6 @@ export default class ListHorarioDiponilvelService {
          .sort((a, b) => a - b);
 
       const bloqueio: number[] = [];
-      // if (findBloqueio) {
-      //    const lenght = findBloqueio.length - 1;
-      //    let i = -1;
-
-      //    while (i < lenght) {
-      //       i += 1;
-
-      //       const startB = startBloqueio[i];
-      //       const stopB = stopBloqueio[i];
-
-      //       rangeHorario(startB, stopB).map((h) => bloqueio.push(h));
-      //    }
-      // }
-
       const hourCorrent = new Date(Date.now());
       const HC = addHours(hourCorrent, -3);
 
@@ -270,7 +289,6 @@ export default class ListHorarioDiponilvelService {
 
       const wekreservas = findWeek.filter((h) => {
          const wek = format(event, "i");
-         console.log(wek, event);
 
          if (h.week === wek) {
             return h;
@@ -333,9 +351,6 @@ export default class ListHorarioDiponilvelService {
          });
          return h !== bk;
       });
-
-      const ho = new Date(Date.now());
-      const horaAtual = addHours(ho, -3);
 
       const hor = horariosBloqueados.map((h) => {
          const hour = new Date(ano, mes - 1, dia, 0, h, 0);
